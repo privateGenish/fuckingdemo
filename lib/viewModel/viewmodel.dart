@@ -39,17 +39,19 @@ class ViewModel with ChangeNotifier {
     //unless is a normal card, do not route ro a route from itself.
     if (routeName == "card" || currentRouteName != routeName) {
       currentRouteName = routeName;
+      if (routeName == "loading") cardSwipeNavigatorKey.currentState?.pushReplacementNamed("loading");
       if (routeName == "card") await Future.delayed(cardSwipeDuration); // wait to animation to finish
       if (routeName == "card") pendingCards.removeLast();
-
       pendingCards.isNotEmpty
           ? cardSwipeNavigatorKey.currentState
               ?.pushReplacementNamed(routeName, arguments: routeName == "card" ? pendingCards.last : null)
-          : cardSwipeNavigatorKey.currentState?.pushReplacementNamed("loading");
+          : _nextCard("loading");
       //resetting the card state for the next card
       currentCardState = null;
     }
   }
+
+  _startSwiping() => cardSwipeNavigatorKey.currentState?.pushReplacementNamed("card", arguments: pendingCards.last);
 
 //Like/Unlike Callback
   void onPressLikeOrUnlike(CardState userDecision) async {
@@ -102,7 +104,7 @@ class ViewModel with ChangeNotifier {
   fetchCardsOnLoading() async {
     try {
       await _fetchCard();
-      _nextCard("card");
+      _startSwiping();
     } catch (e) {
       _errorHandler(e);
     }
@@ -110,6 +112,7 @@ class ViewModel with ChangeNotifier {
 
   fetchCardsWhileSwiping() async {
     try {
+      /// change -1 to disable
       int kMinNumberToFetch = -1;
       if (pendingCards.length == kMinNumberToFetch) await _fetchCard();
     } catch (e) {
