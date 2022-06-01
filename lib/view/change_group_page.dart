@@ -11,7 +11,6 @@ class ChangeGroupPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(),
       body: Consumer<ViewModel>(builder: (context, model, _) {
-        
         return Center(
           child: SizedBox(
             child: ListView.builder(
@@ -19,14 +18,12 @@ class ChangeGroupPage extends StatelessWidget {
                 shrinkWrap: true,
                 itemCount: model.currentUser?.groups.length ?? 2,
                 itemBuilder: (context, index) => Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ListTile(
-                      onTap: () => model.changeCurrentGroup(model.currentUser?.groups[index]["guid"] ?? "null"),
-                      leading: GroupAvatar(model.currentUser?.groups[index]["name"]),
-                      title: Text(model.currentUser?.groups[index]["name"] ?? "error")
-                   
-                  ),
-                )),
+                      padding: const EdgeInsets.all(8.0),
+                      child: ListTile(
+                          onTap: () => model.changeCurrentGroup(model.currentUser?.groups[index]["guid"] ?? "null"),
+                          leading: GroupAvatar(model.currentUser?.groups[index]["name"]),
+                          title: Text(model.currentUser?.groups[index]["name"] ?? "error")),
+                    )),
           ),
         );
       }),

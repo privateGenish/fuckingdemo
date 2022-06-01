@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:random_avatar/random_avatar.dart';
 
+//Model
 class SwipeCardModel {
   SwipeCardModel({this.title, this.country, this.profession});
   String? title;
@@ -18,7 +19,8 @@ class SwipeCardModel {
   static fromMap(map) => SwipeCardModel(title: map["title"], country: map["country"], profession: map["profession"]);
 }
 
-class User extends HiveObject {
+//Model
+class User{
   String name;
   String uid;
   List<Map<String, String>> groups;
@@ -37,6 +39,7 @@ class User extends HiveObject {
   }
 }
 
+//Model
 class Group {
   String name;
   String guid;
@@ -46,31 +49,38 @@ class Group {
   Map toMap() => {"name": name, "guid": guid};
 }
 
+/// Repository is the class that manages the various methods and business logic of the various resources
+/// The ViewModel should address to the repository when a resources is needed, without consideration to the logic and resource.
+/// The only consideration is Error handling
 class Repository {
   final HTTPService _httpService = HTTPService();
   final LocalService _localService = LocalService();
 
-  getUser(String uid) async {
+  Future<User> getUser(String uid) async {
     if (kDebugMode) {
-      print("   fetching user");
+      print("   fetching user $uid");
     }
     User? user = await _localService.getUser(uid);
     if (user != null) return user;
+
     var rawData = await _httpService.getUser(uid);
     var rawResults = rawData["Item"];
+
+//parsing to User object
     List<Map<String, String>> groups = [];
     for (var group in rawResults['groups']) {
       groups.add({"name": group["name"], "guid": group["guid"]});
     }
-
     User fetchedUser = User(rawResults["uid"], rawResults["name"], groups: groups);
+
     _localService.saveUserInfo(fetchedUser);
+
     return fetchedUser;
   }
 
   getGroup(String guid) async {
     if (kDebugMode) {
-      print("   fetching group");
+      print("   fetching group $guid");
     }
     var rawData = await _httpService.getGroup(guid);
     var rawResults = rawData["Item"];
@@ -79,7 +89,7 @@ class Repository {
     }
     List<User> members = [];
     for (var uid in rawResults["members"]) {
-      User user = await getUser(uid);
+      User? user = await getUser(uid);
       members.add(user);
     }
     return Group(rawResults["guid"], rawResults["name"], members);
@@ -111,6 +121,7 @@ class HTTPService {
   Future<Map> getBulk() async {
     var responseJson = await FakeServer.getItems(4);
     Map response = jsonDecode(responseJson);
+/// Adding request type to easily decide between which error is related in the ui
     return apiResponse(response, RequestType.card);
   }
 
@@ -184,6 +195,7 @@ class LocalService {
   }
 }
 
+/// play with the random error to test the app soundness.
 class FakeServer {
   static getItems(int n) async {
     int oddsToMakeAnError = 500; // set to 1 to get only error
@@ -273,6 +285,7 @@ class FakeServer {
 }
 
 enum RequestType { card }
+
 
 class APIError implements Exception {
   String statusCode;

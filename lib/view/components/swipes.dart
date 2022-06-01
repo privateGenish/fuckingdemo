@@ -22,18 +22,15 @@ class Swipes extends StatelessWidget {
               switch (settings.name) {
                 case "loading":
                   return PageTransition(child: const LoadingCard(), type: PageTransitionType.fade);
-                case "card": 
-                return PageTransition(
+                case "card":
+                  return PageTransition(
                     type: PageTransitionType.fade,
                     child: SwipeCard(
                       card: settings.arguments as SwipeCardModel?,
                     ),
                   );
                 default:
-                  return PageTransition(
-                    type: PageTransitionType.fade,
-                    child: const ErrorCard()
-                  );
+                  return PageTransition(type: PageTransitionType.fade, child: const ErrorCard());
               }
             });
       }),
@@ -61,8 +58,8 @@ class SwipeCard extends StatelessWidget {
           builder: (context, model, child) {
             return AnimatedPositioned(
               curve: Curves.easeIn,
-              left: model.cardState != null
-                  ? model.cardState != CardState.like
+              left: model.currentCardState != null
+                  ? model.currentCardState != CardState.like
                       ? -1 * (size.width + 100)
                       : (size.width + 100)
                   : 0,

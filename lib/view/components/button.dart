@@ -11,7 +11,10 @@ class XButton extends StatelessWidget {
             style: ElevatedButton.styleFrom(
                 primary: Colors.redAccent.shade200, shape: const CircleBorder(), padding: const EdgeInsets.all(30)),
             onPressed: () => model.onPressLikeOrUnlike(CardState.unlike),
-            child: const Icon(Icons.cancel, color: Colors.white,));
+            child: const Icon(
+              Icons.cancel,
+              color: Colors.white,
+            ));
       });
 }
 
@@ -24,7 +27,10 @@ class LikeButton extends StatelessWidget {
           style: ElevatedButton.styleFrom(
               primary: Colors.purple, shape: const CircleBorder(), padding: const EdgeInsets.all(30)),
           onPressed: () => model.onPressLikeOrUnlike(CardState.like),
-          child: const Icon(Icons.favorite, color: Colors.white,),
+          child: const Icon(
+            Icons.favorite,
+            color: Colors.white,
+          ),
         );
       });
 }

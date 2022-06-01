@@ -40,7 +40,10 @@ class DrawerMenu extends StatelessWidget {
                 const Divider(),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Text(model.currentGroup?.name ?? "Error", style: Theme.of(context).textTheme.bodySmall,),
+                  child: Text(
+                    model.currentGroup?.name ?? "Error",
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ),
                 ListView.builder(
                     physics: const NeverScrollableScrollPhysics(),

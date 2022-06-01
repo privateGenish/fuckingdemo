@@ -10,23 +10,25 @@ class LikeCardsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      actions: [
-        IconButton(onPressed: () => Provider.of<ViewModel>(context, listen: false).deleteAllCardsAndPop(), icon: const Icon(Icons.delete))
-      ],
-    ),
-    body: SingleChildScrollView(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+              onPressed: () => Provider.of<ViewModel>(context, listen: false).deleteAllCardsAndPop(),
+              icon: const Icon(Icons.delete))
+        ],
+      ),
+      body: SingleChildScrollView(
         child: FutureBuilder<List<SwipeCardModel>>(
-          future: Provider.of<ViewModel>(context,listen: false).getLikedCards(Provider.of<ViewModel>(context, listen: false).currentGroup?.guid ?? " null"),
-          builder: (context, snapshot) {
-          
-          if (snapshot.connectionState == ConnectionState.waiting) return const LoadingPage();
-          List<SwipeCardModel> cards = snapshot.data ?? [];
-          return ListView.builder(
-            shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: cards.length,
-              itemBuilder: (context, index) => LikedCardsTile(cards[index]));
-        }),
+            future: Provider.of<ViewModel>(context, listen: false)
+                .getLikedCards(Provider.of<ViewModel>(context, listen: false).currentGroup?.guid ?? " null"),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) return const LoadingPage();
+              List<SwipeCardModel> cards = snapshot.data ?? [];
+              return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: cards.length,
+                  itemBuilder: (context, index) => LikedCardsTile(cards[index]));
+            }),
       ));
 }

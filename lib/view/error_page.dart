@@ -13,7 +13,13 @@ class ErrorPage extends StatelessWidget {
           child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[Text("Error", style: Theme.of(context).textTheme.displayMedium,)] + _children(context),
+        children: <Widget>[
+              Text(
+                "Error",
+                style: Theme.of(context).textTheme.displayMedium,
+              )
+            ] +
+            _children(context),
       )),
     );
   }
@@ -43,7 +49,10 @@ class ErrorPage extends StatelessWidget {
       }
     }
     widgets.addAll(<Widget>[
-      const Text("We've encountered an unknown issue that caused a crash. please report the issue for us to handle it.", textAlign: TextAlign.center,),
+      const Text(
+        "We've encountered an unknown issue that caused a crash. please report the issue for us to handle it.",
+        textAlign: TextAlign.center,
+      ),
       TextButton(
           onPressed: () => Provider.of<ViewModel>(context, listen: false).reportIssue(),
           child: const Text("Report Issue"))

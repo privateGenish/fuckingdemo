@@ -2,32 +2,41 @@ import 'package:demo_architecture/model/model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-enum CardState {
-  like,
-  unlike,
-}
-
+//**
+// My philosophy is due to the nature of flutter, by wrapping our entire navigator with Provider
+// we only need one View Model to manage and many models we need.
+// The main drawback is it could get messy, but i'd rather have a messy view model then a messy view.
+// */
 class ViewModel with ChangeNotifier {
   final Repository _repository = Repository();
+
+// This method is called once when the app runs
   Future<void> initializeResources() async {
     if (kDebugMode) {
       print("initializing...");
     }
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 3)); //artificial delay
     await _repository.initializeResources();
     navigateToHomePage();
   }
 
-  //Main Navigator Key
+//Main Navigator Key
   GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: "root navigation key");
 
-  //Card state and controllers
+//The swiped cards are actually nested navigator and this is the key
   GlobalKey<NavigatorState> cardSwipeNavigatorKey = GlobalKey<NavigatorState>(debugLabel: "card swipe key");
+
+  ///Since the `NavigatorState` Api don't expose the setting of the current state
+  ///we need to monitor it manually.
   String currentRouteName = "loading";
-  CardState? cardState;
+  CardState? currentCardState;
+
   Duration cardSwipeDuration = const Duration(milliseconds: 300);
 
+//Send to the next card
+//TODO: implement it better.
   _nextCard(String routeName) async {
+    //unless is a normal card, do not route ro a route from itself.
     if (routeName == "card" || currentRouteName != routeName) {
       currentRouteName = routeName;
       if (routeName == "card") await Future.delayed(cardSwipeDuration); // wait to animation to finish
@@ -37,22 +46,23 @@ class ViewModel with ChangeNotifier {
           ? cardSwipeNavigatorKey.currentState
               ?.pushReplacementNamed(routeName, arguments: routeName == "card" ? pendingCards.last : null)
           : cardSwipeNavigatorKey.currentState?.pushReplacementNamed("loading");
-      cardState = null;
+      //resetting the card state for the next card
+      currentCardState = null;
     }
   }
 
-  _startSwiping(SwipeCardModel card) {
-    currentRouteName = "card";
-    cardSwipeNavigatorKey.currentState?.pushReplacementNamed("card", arguments: card);
-  }
-
-  void onPressLikeOrUnlike(CardState currentCardState) async {
-    if (cardState == null) {
+//Like/Unlike Callback
+  void onPressLikeOrUnlike(CardState userDecision) async {
+    //To prevent double taps, function only is the card is yet to be interacted with.
+    if (currentCardState == null) {
       if (pendingCards.isNotEmpty) {
-        if (currentCardState == CardState.like) {
+        if (userDecision == CardState.like) {
           await _repository.saveCard(currentGroup?.guid ?? "null", pendingCards.last);
         }
-        cardState = currentCardState;
+        currentCardState = userDecision;
+
+        /// we need to notify listeners because the Swipe action is maintained by an `AnimatedPosition`
+        /// that listen to ViewModel.currentCardState
         notifyListeners();
         await _nextCard("card");
       } else {
@@ -61,11 +71,15 @@ class ViewModel with ChangeNotifier {
     }
   }
 
+// get liked cards from the repository
   Future<List<SwipeCardModel>> getLikedCards(String guid) async => _repository.getSavedCards(guid);
 
+// callback for the ErrorPage -> FlatButton "try again"
   void tryAgain() async => await _nextCard("loading");
 
-  //root Navigator methods
+//* Root Navigator methods
+
+// All error without dedicated view are referred to the error page.
   _navigateToErrorPage(error) => rootNavigatorKey.currentState?.pushReplacementNamed("/error", arguments: error);
   navigateToHomePage() {
     while (rootNavigatorKey.currentState!.canPop()) {
@@ -77,7 +91,7 @@ class ViewModel with ChangeNotifier {
   navigateToLikedCardsPage() => rootNavigatorKey.currentState!.pushNamed("/likedCards");
   pop() => rootNavigatorKey.currentState!.canPop() ? rootNavigatorKey.currentState!.pop() : null;
 
-  //Fetching and managing information
+//Fetching and managing information
   List<SwipeCardModel> pendingCards = [];
 
   Future<void> _fetchCard() async {
@@ -88,7 +102,7 @@ class ViewModel with ChangeNotifier {
   fetchCardsOnLoading() async {
     try {
       await _fetchCard();
-      _startSwiping(pendingCards.last);
+      _nextCard("card");
     } catch (e) {
       _errorHandler(e);
     }
@@ -151,4 +165,10 @@ class ViewModel with ChangeNotifier {
       _errorHandler(e);
     }
   }
+}
+
+//enum to check whether the card is a like or a dislike
+enum CardState {
+  like,
+  unlike,
 }
