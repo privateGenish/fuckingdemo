@@ -2,8 +2,8 @@ import 'package:demo_architecture/viewModel/viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:demo_architecture/model/model.dart';
 import 'package:flutter_emoji/flutter_emoji.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
+import 'package:tuple/tuple.dart';
 
 class Swipes extends StatelessWidget {
   const Swipes({Key? key}) : super(key: key);
@@ -11,30 +11,29 @@ class Swipes extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    final ViewModel viewModel = Provider.of<ViewModel>(context, listen: false);
     return SizedBox(
-      height: size.height * 0.67,
-      child: Consumer<ViewModel>(builder: (context, model, _) {
-        return Navigator(
-            reportsRouteUpdateToEngine: true,
-            key: model.cardSwipeNavigatorKey,
-            initialRoute: "loading",
-            onGenerateRoute: (settings) {
-              switch (settings.name) {
-                case "loading":
-                  return PageTransition(child: const LoadingCard(), type: PageTransitionType.fade);
-                case "card":
-                  return PageTransition(
-                    type: PageTransitionType.fade,
-                    child: SwipeCard(
-                      card: settings.arguments as SwipeCardModel?,
-                    ),
+        height: size.height * 0.67,
+        width: size.width,
+        child: Selector<ViewModel, Tuple2<NextCard?, SwipeCardModel?>>(
+            builder: (context, nextCard, _) {
+              switch (nextCard.item1) {
+                case NextCard.swipe:
+                  return SwipeCard(
+                    card: nextCard.item2,
                   );
+                case NextCard.error:
+                  return const ErrorCard();
+                case NextCard.loading:
                 default:
-                  return PageTransition(type: PageTransitionType.fade, child: const ErrorCard());
+                  return const LoadingCard();
               }
-            });
-      }),
-    );
+            },
+            selector: (
+              _,
+              __,
+            ) =>
+                Tuple2(viewModel.nextCard, viewModel.nextSwipeCard)));
   }
 }
 
@@ -49,8 +48,9 @@ class SwipeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    //It's important to set listen to false, other wise flutter will rebuild the widget
-    //When the function is called causing two trigger and a bad state error.
+
+//It's important to set listen to false, other wise flutter will rebuild the widget
+//When the function is called causing two trigger and a bad state error.
     Provider.of<ViewModel>(context, listen: false).fetchCardsWhileSwiping();
     return Stack(
       children: [

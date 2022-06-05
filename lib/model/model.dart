@@ -198,7 +198,7 @@ class LocalService {
 /// play with the random error to test the app soundness.
 class FakeServer {
   static getItems(int n) async {
-    int oddsToMakeAnError = 500; // set to 1 to get only error
+    int oddsToMakeAnError = 7; // set to 1 to get only error
     Faker faker = Faker();
     Map<dynamic, dynamic> response = {"items": []};
     await Future.delayed(const Duration(seconds: 2));

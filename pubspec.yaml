@@ -28,6 +28,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   hive: ^2.2.1
+  tuple: ^2.0.0
   hive_flutter: any
   path_provider: ^2.0.10
   faker: any
